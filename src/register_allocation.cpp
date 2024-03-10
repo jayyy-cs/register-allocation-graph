@@ -25,7 +25,7 @@ RegisterAssignment assignRegisters(const std::string &pathToGraph,
     }
 
     // Check if the number of registers is sufficient
-    if (maxDegree + 1 > numRegisters)
+    if (maxDegree + 1 > static_cast<unsigned>(numRegisters))
     {
         return {}; //return empty map
     }
