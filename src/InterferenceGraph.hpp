@@ -4,6 +4,7 @@
 #include <stdexcept>
 #include <string>
 #include <unordered_set>
+#include <unordered_map>
 
 namespace shindler::ics46::project6 {
 
@@ -66,74 +67,149 @@ class InterferenceGraph {
     [[nodiscard]] unsigned degree(const T &vertex) const;
 
    private:
-    // Private member variables here.
+    std::unordered_map<T, std::unordered_set<T>> adjList;
+    unsigned edgeCounter;
 };
 
 template <typename T>
-InterferenceGraph<T>::InterferenceGraph() {
-    // TODO: Implement this
+InterferenceGraph<T>::InterferenceGraph()
+:edgeCounter(0)
+{
+    adjList.clear();
 }
 
 template <typename T>
-InterferenceGraph<T>::~InterferenceGraph() {
-    // TODO: Implement this
+InterferenceGraph<T>::~InterferenceGraph()
+{
 }
 
 template <typename T>
 std::unordered_set<T> InterferenceGraph<T>::neighbors(const T &vertex) const {
-    // TODO: Implement this
-    return {};
+    auto vertexIterator = adjList.find(vertex);
+    if(vertexIterator == adjList.end())
+    {
+        throw UnknownVertexException(vertex);
+    }
+
+    return vertexIterator->second;
 }
 
 template <typename T>
 std::unordered_set<T> InterferenceGraph<T>::vertices() const noexcept {
-    // TODO: Implement this
-    return {};
+    std::unordered_set<T> verticesSet;
+    for(const auto& pair: adjList)
+    {
+        verticesSet.insert(pair.first);
+    }
+
+    return verticesSet;
+
 }
 
 template <typename T>
 unsigned InterferenceGraph<T>::numVertices() const noexcept {
-    // TODO: Implement this
-    return {};
+    return adjList.size();
 }
 
 template <typename T>
 unsigned InterferenceGraph<T>::numEdges() const noexcept {
-    // TODO: Implement this
-    return {};
+    return edgeCounter;
 }
 
 template <typename T>
 void InterferenceGraph<T>::addEdge(const T &source, const T &destination) {
-    // TODO: Implement this
+    auto sourceIterator = adjList.find(source);
+    auto destinationIterator = adjList.find(destination);
+
+    // If either vertex does not exist, throw UnknownVertexException
+    if(sourceIterator == adjList.end() || destinationIterator == adjList.end())
+    {
+        throw UnknownVertexException(sourceIterator == adjList.end()? source : destination);
+    }
+    
+    if (adjList[source].find(destination) == adjList[source].end())
+    {
+        adjList[source].insert(destination);
+        adjList[destination].insert(source);
+        edgeCounter++;  // Increment edge counter
+    }
 }
 
 template <typename T>
 void InterferenceGraph<T>::removeEdge(const T &source, const T &destination) {
-    // TODO: Implement this
+    auto sourceIterator = adjList.find(source);
+    auto destinationIterator = adjList.find(destination);
+
+    // If either vertex does not exist, throw UnknownVertexException
+    if(sourceIterator == adjList.end() || destinationIterator == adjList.end())
+    {
+        throw UnknownVertexException(sourceIterator == adjList.end()? source : destination);
+    }
+
+    // Both vertices exist, now check if the edge exists
+    if(sourceIterator->second.find(destination) == sourceIterator->second.end() ||
+        destinationIterator->second.find(source) == destinationIterator->second.end())
+    {
+        // If the edge does not exist, throw UnknownEdgeException
+        throw UnknownEdgeException(source, destination);
+    }
+
+    if(adjList[source].find(destination) != adjList[source].end())
+    {
+        adjList[source].erase(destination);
+        adjList[destination].erase(source);
+        edgeCounter--;
+    }
+    
 }
 
 template <typename T>
 void InterferenceGraph<T>::addVertex(const T &vertex) {
-    // TODO: Implement this
+    adjList.insert({vertex, std::unordered_set<T>()});
 }
 
 template <typename T>
 void InterferenceGraph<T>::removeVertex(const T &vertex) {
-    // TODO: Implement this
+    auto vertexIterator = adjList.find(vertex);
+    if(vertexIterator == adjList.end())
+    {
+        throw UnknownVertexException(vertex);
+    }
+
+    for(const T& neighbor : vertexIterator->second)
+    {
+        adjList[neighbor].erase(vertex);
+        edgeCounter--;
+    }
+
+    adjList.erase(vertex);
+
 }
 
 template <typename T>
 bool InterferenceGraph<T>::interferes(const T &source,
                                       const T &destination) const {
-    // TODO: Implement this
-    return {};
+    auto sourceIterator = adjList.find(source);
+    auto destinationIterator = adjList.find(destination);
+
+    // If either vertex does not exist, throw UnknownVertexException
+    if(sourceIterator == adjList.end() || destinationIterator == adjList.end())
+    {
+        throw UnknownVertexException(sourceIterator == adjList.end() ? source : destination);
+    }
+
+    return sourceIterator->second.find(destination) != sourceIterator->second.end();
 }
 
 template <typename T>
 unsigned InterferenceGraph<T>::degree(const T &vertex) const {
-    // TODO: Implement this
-    return {};
+    auto vertexIterator = adjList.find(vertex);
+    if(vertexIterator == adjList.end())
+    {
+        throw UnknownVertexException(vertex);
+    }
+
+    return vertexIterator->second.size();
 }
 
 }  // namespace shindler::ics46::project6
