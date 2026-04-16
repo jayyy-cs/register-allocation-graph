@@ -3,7 +3,7 @@
 ## Overview
 This project implements an interference graph and solves the register allocation problem using graph coloring techniques.
 Register allocation is a fundamental compiler optimization problem where variables must be assigned to a limited number of CPU registers. 
-This project models the problem as a graph coloring problem, where variables that interfere cannot share the same register. :contentReference[oaicite:0]{index=0}\
+This project models the problem as a graph coloring problem, where variables that interfere cannot share the same register.
 
 ## Features
 Implementation of an interference graph data structure
